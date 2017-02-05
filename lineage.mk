@@ -16,11 +16,11 @@
 
 $(call inherit-product, device/htc/jewel/full_jewel.mk)
 
-# Inherit CM full phone configuration
+# Inherit LineageOS full phone configuration
 $(call inherit-product, vendor/cm/config/common_full_phone.mk)
 
 # Device naming
-PRODUCT_NAME := cm_jewel
+PRODUCT_NAME := lineage_jewel
 
 # Override build props
 PRODUCT_BUILD_PROP_OVERRIDES += \
