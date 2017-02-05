@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Matthew D. Mower
+# Copyright (C) 2016-2017 Matthew D. Mower
 # Copyright (C) 2015 The CyanogenMod Project
 # Copyright (C) 2013 The Android Open Source Project
 #
@@ -14,13 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-USE_CAMERA_STUB := true
-
 # inherit from the proprietary version
 -include vendor/htc/jewel/BoardConfigVendor.mk
 
+BOARD_VENDOR := htc
+
+# Kernel
+BOARD_KERNEL_BASE := 0x80400000
+BOARD_KERNEL_CMDLINE := console=none androidboot.hardware=qcom
+BOARD_KERNEL_PAGESIZE := 2048
+BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01800000
+TARGET_KERNEL_CONFIG := jet_defconfig
+TARGET_KERNEL_SOURCE := kernel/htc/msm8960
+
 # Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := jewel
+TARGET_BOOTLOADER_BOARD_NAME := MSM8960
 TARGET_NO_BOOTLOADER := true
 
 # Platform
@@ -32,33 +40,14 @@ TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
-TARGET_CPU_SMP := true
 TARGET_CPU_VARIANT := krait
-TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
 
-# Kernel
-BOARD_KERNEL_BASE := 0x80400000
-BOARD_KERNEL_CMDLINE := console=none androidboot.hardware=qcom androidboot.selinux=permissive
-BOARD_KERNEL_PAGESIZE := 2048
-BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01700000
-TARGET_KERNEL_CONFIG := jet_defconfig
-TARGET_KERNEL_SOURCE := kernel/htc/msm8960
+# Camera (Needed to avoid SEPolicy neverallows)
+TARGET_HAS_LEGACY_CAMERA_HAL1 := true
+TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
 
-# QCOM hardware
-BOARD_USES_QCOM_HARDWARE := true
-
-# Flags
-COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
-
-# Graphics
-USE_OPENGL_RENDERER := true
-TARGET_DISPLAY_USE_RETIRE_FENCE := true
-TARGET_USES_C2D_COMPOSITION := true
-TARGET_USES_ION := true
-NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
-
-# Power
-TARGET_POWERHAL_VARIANT := qcom
+# Charger
+BOARD_CHARGING_MODE_BOOTING_LPM := /sys/htc_lpm/lpm_mode
 
 # Filesystem
 TARGET_USERIMAGES_USE_EXT4 := true
@@ -72,12 +61,42 @@ BOARD_RECOVERYIMAGE_PARTITION_SIZE := 16776704
 # partition sizes aren't identical for both variants.
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 2281701376
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 12616466432
+BOARD_CACHEIMAGE_PARTITION_SIZE := 234880000
+BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_FLASH_BLOCK_SIZE := 131072
 
+# Graphics
+NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
+TARGET_DISPLAY_INSECURE_MM_HEAP := true
+TARGET_DISPLAY_USE_RETIRE_FENCE := true
+TARGET_USES_C2D_COMPOSITION := true
+TARGET_USES_ION := true
+USE_OPENGL_RENDERER := true
+
+# Power
+TARGET_POWERHAL_VARIANT := qcom
+
+# QCOM hardware
+BOARD_USES_QCOM_HARDWARE := true
+
 # Recovery
-BOARD_HAS_NO_SELECT_BUTTON := true
-BOARD_RECOVERY_BLDRMSG_OFFSET := 2048
+BOARD_GLOBAL_CFLAGS := -DBOARD_RECOVERY_BLDRMSG_OFFSET=2048
+BOARD_NO_SECURE_DISCARD := true
 TARGET_RECOVERY_DEVICE_MODULES := chargeled
+
+# SELinux
+-include device/qcom/sepolicy/sepolicy.mk
+BOARD_SEPOLICY_DIRS += device/htc/jewel/sepolicy
+
+# TWRP
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+RECOVERY_VARIANT := twrp
+TW_EXTERNAL_STORAGE_MOUNT_POINT := "usb-otg"
+TW_EXTERNAL_STORAGE_PATH := "/usb-otg"
+TW_INCLUDE_CRYPTO := true
+TW_INCLUDE_NTFS_3G := true
+TW_TARGET_USES_QCOM_BSP := true
+TW_THEME := portrait_hdpi
 
 # Vold
 # Pre-HBOOT 2.10
@@ -89,19 +108,3 @@ BOARD_VOLD_MAX_PARTITIONS := 40
 # but we need to add/remove symlinks to them based on whether there are one
 # or two drives available to UMS. This is handled in init.
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /lun%d/file
-
-# Charge mode
-BOARD_CHARGING_MODE_BOOTING_LPM := /sys/htc_lpm/lpm_mode
-
-# SELinux
--include device/qcom/sepolicy/sepolicy.mk
-BOARD_SEPOLICY_DIRS += device/htc/jewel/sepolicy
-
-# TWRP
-RECOVERY_VARIANT := twrp
-TW_EXTERNAL_STORAGE_MOUNT_POINT := "usb-otg"
-TW_EXTERNAL_STORAGE_PATH := "/usb-otg"
-TW_INCLUDE_CRYPTO := true
-TW_INCLUDE_NTFS_3G := true
-TW_TARGET_USES_QCOM_BSP := true
-TW_THEME := portrait_hdpi
